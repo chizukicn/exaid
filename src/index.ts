@@ -1,14 +1,9 @@
 import axios from "axios"
 import fs from "fs"
+import type { OpenApiModel, OpenApiModelProperty, OpenApiModule, OpenApiOperation, OpenApiRequestParams, OpenApiResult } from "open-api"
 import prettier from "prettier"
-export interface FetchOpenApiOptions {
-    url?: string
-}
-
-interface OpenApiTag {
-    name: string
-    description: string
-}
+import nunjucks from "nunjucks"
+import path from "path"
 
 const baseTypes = ["string", "number", "boolean", "Array", "any", "void", "undefined", "null"]
 
@@ -18,103 +13,35 @@ export type HttpStatusCode = "200" | "201" | "401" | "403" | "404"
 
 export type OpenApiBaseType = "string" | "number" | "integer" | "boolean" | "array" | "object" | "file" | "binary" | "null"
 
-export interface OpenApiSchema {
-    $ref: string
+const typeMap: Record<string, string> = {
+    integer: "number",
+    bigdecimal: "number",
+    decimal: "number",
+    date: "string",
+    int: "number",
+    List: "Array",
+    Map: "Record",
+    Set: "Array"
 }
 
-export interface OpenApiParameter {
-    in: string
-    name: string
-    description: string
-    required: boolean
-    schema: OpenApiSchema
-}
-
-export interface OpenApiResponse {
-    description: string
-    schema?: OpenApiSchema
-}
-
-export interface OpenApiPath {
-    tags: string[]
-    summary: string
-    description: string
-    operationId: string
-    consumes: string[]
-    produces: string[]
-    parameters: OpenApiParameter[]
-    responses: Record<HttpStatusCode, OpenApiResponse>
-}
-
-export type OpenApiPaths = Record<string, Record<HttpMethod, OpenApiPath>>
-
-export interface OpenApiProperty {
-    type: OpenApiBaseType
-    items?: OpenApiSchema & { type?: OpenApiBaseType }
-    description: string
-    format?: string
-    example?: string
-}
-
-export interface OpenApiDefinition {
-    type: OpenApiBaseType
-    title?: string
-    required: string[]
-    properties: Record<string, OpenApiProperty>
-}
-
-export interface OpenApiResult {
-    tags: OpenApiTag[]
-    paths: OpenApiPaths
-    definitions: Record<string, OpenApiDefinition>
-}
-
-interface OpenApiOperation {
-    name: string
-    path: string
-    method: HttpMethod
-    description: string
-    returnType: string
-    parameters: OpenApiRequestParams[]
-}
-
-export interface OpenApiModule {
-    name: string
-    description: string
-    paths: OpenApiOperation[]
-    imports: string[]
-}
-
-export interface OpenApiModelProperty extends Omit<OpenApiProperty, "type"> {
-    name: string
-    required: boolean
-    type: string
-}
-
-export interface OpenApiModel {
-    name: string
-    title?: string
-    properties: OpenApiModelProperty[]
-}
-
-export interface OpenApiRequestParams {
-    name: string
-    required: boolean
-    type: string
-}
-
-function getExternalType(type: OpenApiType) {
+function getExternalType(type: ExportType, baseTypes: string[] = []): string[] {
     const types: string[] = []
     if (!baseTypes.includes(type.name)) {
         types.push(type.name)
     }
     if (type.generic.length) {
-        type.generic.forEach(e => types.push(...getExternalType(e)))
+        type.generic.forEach(e => types.push(...getExternalType(e, baseTypes)))
     }
     return types
 }
 
-export async function fetchOpenApi(url: string, commonTypes: string[] = []) {
+const ts = getExternalType(getType("List<HttpResponse<string>,HttpResponse<Goods[]>>"), baseTypes)
+console.log(ts, getType("List<HttpResponse<string>,HttpResponse<Goods[]>>"))
+export interface FetchOpenApiOptions {
+    url?: string
+}
+
+export async function fetchOpenApi(url: string) {
     const result = await axios.get<OpenApiResult>(url).then(r => r.data)
     const tags = result.tags ?? []
     const definitions = result.definitions ?? {}
@@ -127,7 +54,7 @@ export async function fetchOpenApi(url: string, commonTypes: string[] = []) {
 
     for (let [name, define] of Object.entries(definitions)) {
         name = getType(name).name
-        if (!models.find(e => e.name === name) && !commonTypes.includes(name)) {
+        if (!models.find(e => e.name === name)) {
             models.push({
                 name,
                 title: define.title,
@@ -180,9 +107,9 @@ export async function fetchOpenApi(url: string, commonTypes: string[] = []) {
                             const ref = response.schema.$ref.replace(/^#\/definitions\//, "")
                             const target = models.find(e => e.title === ref)
                             const generic = getType(ref)
-                            if (target || commonTypes.includes(generic.name)) {
+                            if (target) {
                                 returnType = generic.toString()
-                                const importType = getExternalType(generic)
+                                const importType = getExternalType(generic, baseTypes)
                                 imports.push(...importType)
                             }
                         }
@@ -192,7 +119,7 @@ export async function fetchOpenApi(url: string, commonTypes: string[] = []) {
 
                     for (let parameter of pathData.parameters) {
                         const generic = getType(parameter.schema.$ref.replace(/^#\/definitions\//, ""))
-                        const importType = getExternalType(generic)
+                        const importType = getExternalType(generic, baseTypes)
                         imports.push(...importType)
                         parameters.push({
                             name: parameter.name,
@@ -215,35 +142,33 @@ export async function fetchOpenApi(url: string, commonTypes: string[] = []) {
             imports
         })
     }
+    console.log(models, modules.map(e => {
+        return {
+            ...e,
+            paths: e.paths.map(f => {
+                return  JSON.stringify(f)
+                
+            }),
+        }
+    }))
     return { models, modules }
 }
 
-const typeMap: Record<string, string> = {
-    integer: "number",
-    bigdecimal: "number",
-    decimal: "number",
-    date: "string",
-    int: "number",
-    List: "Array",
-    Map: "Record",
-    Set: "Array"
-}
-
-interface OpenApiType {
+interface ExportType {
     name: string
-    generic: OpenApiType[]
+    generic: ExportType[]
 
     toString(): string
 }
 
-function getType(type: string = "any"): OpenApiType {
+function getType(type: string = "any"): ExportType {
     if (!baseTypes.includes(type)) {
         type = type.replaceAll(/«/g, "<").replaceAll(/»/g, ">")
     }
 
     let name = type
 
-    let generic: OpenApiType[] = []
+    let generic: ExportType[] = []
 
     if (type.endsWith("[]")) {
         const genericType = getType(type.slice(0, -2))
@@ -277,7 +202,7 @@ function getType(type: string = "any"): OpenApiType {
     }
 }
 
-interface GenerateOptions {
+interface ExportOptions {
     url: string
     dir?: string
 
@@ -293,6 +218,8 @@ interface GenerateOptions {
 
     transformModuleName?: (module: string) => string
 
+    transformReturnType?: (returnType: string) => string
+
     instanceName?: string
 
     importInstance?: boolean
@@ -301,87 +228,29 @@ interface GenerateOptions {
 
     commonTypes?: string[]
 
+
     transformModelType?: (type: string) => string
 }
 
-export async function generate(option: GenerateOptions) {
-    const { dir = ".spec", instanceName = "_instance", importInstance = true, instancePackage = "axios", url } = option
+export async function generate(option: ExportOptions) {
+    const { dir = ".spec", url } = option
     fs.mkdirSync(dir, { recursive: true })
     const { models, modules } = await fetchOpenApi(url)
 
-    let typeCode = ""
-    for (let model of models) {
-        typeCode += `/**\n`
-        typeCode += ` * @title ${model.title}\n`
-        typeCode += ` */\n`
+    const typeTemplate =  fs.readFileSync(path.resolve(process.cwd(),"templates/types.njk"),"utf-8")
 
-        typeCode += `export interface ${model.name} {\n`
-        for (let property of model.properties) {
-            if (property.description) {
-                typeCode += `    /** \n`
-                typeCode += `    *  @description ${property.description} \n`
-                typeCode += `    **/ \n`
-            }
-            typeCode += `    ${property.name}${property.required ? "?" : ""}: ${property.type}\n`
-        }
-        typeCode += `}\n`
-        typeCode += `\n`
-    }
+    nunjucks.configure({
+        autoescape: false,
+    })
 
-    typeCode = option.transformTypes?.(typeCode) ?? typeCode
+    const typeCode = nunjucks.renderString(typeTemplate,{models})
     writeCode(`${dir}/types.ts`, typeCode)
 
+    const moduleTemplate = fs.readFileSync(path.resolve(process.cwd(),"templates/module.njk"),"utf-8")
+
     for (let module of modules) {
-        let headerCode = ""
-        if (importInstance) {
-            headerCode += `import ${instanceName} from "${instancePackage}"\n`
-        }
-        if (module.imports.length > 0) {
-            headerCode += `import {${module.imports.join(",")}} from "./types"\n`
-        }
-
-        headerCode = option.transformModuleHeader?.(headerCode) ?? headerCode
-
-        let bodyCode = `{\n`
-        bodyCode += `     \n`
-        for (let operation of module.paths) {
-            bodyCode += `    /** \n`
-            bodyCode += `    *  @description ${operation.description} \n`
-            bodyCode += `    **/  \n`
-            bodyCode += `    ${operation.name}(${operation.parameters.map(e => `${e.name}:${e.type}`).join(",")}){\n`
-
-            bodyCode += `        return ${instanceName}.${operation.method}<${operation.returnType}>("${operation.path}"`
-            const paramterNames = operation.parameters.map(e => e.name)
-            if (paramterNames.length > 0) {
-                bodyCode += ","
-                if (paramterNames.length > 1) {
-                    bodyCode += `{...${paramterNames.join(",")}}`
-                } else {
-                    bodyCode += paramterNames[0]
-                }
-            }
-
-            bodyCode += ")\n"
-            bodyCode += `    },\n`
-        }
-        bodyCode += `}\n`
-
-        bodyCode = option.transformModuleBody?.(bodyCode) ?? bodyCode
-
-        let code = ""
-        code += headerCode
-        code += `export default ${bodyCode}`
-        if (option.transformModuleFooter) {
-            code += "\n"
-            code += option.transformModuleFooter
-        }
-        code = option.transformModule?.(code) ?? code
-
-        const name = option.transformModuleName?.(module.name) ?? module.name
-        if (code) {
-            //     code = prettier.format(code, { parser: "typescript" })
-            writeCode(`${dir}/${name}.ts`, code)
-        }
+        const code = nunjucks.renderString(moduleTemplate,module)
+        writeCode(`${dir}/${module.name}.ts`, code)
     }
 
     let manifest = JSON.stringify({ models, modules })
@@ -400,39 +269,4 @@ export function writeCode(target: string, code: string) {
     fs.writeFileSync(target, code)
 }
 
-export function generateWithFunction(url: string, dir?: string) {
-    return generate({
-        url,
-        dir,
-        transformTypes: (types: string) => {
-            return `
-    export interface HttpResponse<T = unknown> {
-        msg: string
-        code: string
-        data: T
-        succ: boolean
-    }
-
-    export interface PagingData<T>{
-        currentPageIndex:number
-        items:T[]
-        nextIndex:number
-        pageSize:number
-        previousIndex:number
-        startIndex:number
-        totalCount:number
-        totalPageCount:number
-    }
-    
-    ${types}`
-        },
-        importInstance: false,
-        transformModuleHeader(header: string) {
-            return `import {defineRequest} from "./common"\n${header}`
-        },
-        transformModuleBody(body: string) {
-            return `defineRequest(_instance=>(${body}))`
-        }
-    })
-}
 

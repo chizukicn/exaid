@@ -1,0 +1,13 @@
+{% for model in models %}
+	/**
+	* @title {{model.title}}
+	*/
+	export interface {{model.name}} {
+	{% for prop in model.properties %}
+		/**
+		* @description {{prop.description}}
+		*/
+		{{prop.name}}{{'?' if not prop.required}}:{{prop.type}}
+	{% endfor %}
+	}
+{% endfor %}
