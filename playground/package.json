@@ -1,0 +1,17 @@
+{
+    "name": "swagger-export",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dev": "rollup -c rollup.config.js && node ./dist/index.mjs",
+        "build": "rollup -c rollup.config.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "openapi-export": "workspace:*"
+    }
+}

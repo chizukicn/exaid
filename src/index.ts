@@ -1,9 +1,9 @@
 import axios from "axios"
 import fs from "fs"
-import type { OpenApiModel, OpenApiModelProperty, OpenApiModule, OpenApiOperation, OpenApiRequestParams, OpenApiResult } from "open-api"
-import prettier from "prettier"
 import nunjucks from "nunjucks"
+import type { OpenApiModel, OpenApiModelProperty, OpenApiModule, OpenApiOperation, OpenApiRequestParams, OpenApiResult } from "open-api"
 import path from "path"
+import prettier from "prettier"
 
 const baseTypes = ["string", "number", "boolean", "Array", "any", "void", "undefined", "null"]
 
@@ -17,6 +17,8 @@ const typeMap: Record<string, string> = {
     integer: "number",
     bigdecimal: "number",
     decimal: "number",
+    float: "number",
+    double: "number",
     date: "string",
     int: "number",
     List: "Array",
@@ -24,21 +26,34 @@ const typeMap: Record<string, string> = {
     Set: "Array"
 }
 
-function getExternalType(type: ExportType, baseTypes: string[] = []): string[] {
+export interface Type {
+    name: string
+    generic: Type[]
+    toString(): string
+}
+
+function getExternalType(param: string | Type, lib: string[] = []): string[] {
+    const type = typeof param === "string" ? getType(param) : param
     const types: string[] = []
-    if (!baseTypes.includes(type.name)) {
+    if (!lib.includes(type.name) && !baseTypes.includes(type.name)) {
         types.push(type.name)
     }
     if (type.generic.length) {
-        type.generic.forEach(e => types.push(...getExternalType(e, baseTypes)))
+        type.generic.forEach(e => types.push(...getExternalType(e, lib)))
     }
     return types
 }
 
-const ts = getExternalType(getType("List<HttpResponse<string>,HttpResponse<Goods[]>>"), baseTypes)
-console.log(ts, getType("List<HttpResponse<string>,HttpResponse<Goods[]>>"))
 export interface FetchOpenApiOptions {
     url?: string
+}
+
+const REF_REGEX = /^#\/definitions\//g
+
+function handleRef(ref: string = "") {
+    if (REF_REGEX.test(ref)) {
+        return ref.replace(/^#\/definitions\//, "")
+    }
 }
 
 export async function fetchOpenApi(url: string) {
@@ -50,7 +65,7 @@ export async function fetchOpenApi(url: string) {
 
     const models: OpenApiModel[] = []
 
-    const refs: (() => void)[] = []
+    const afters: (() => void)[] = []
 
     for (let [name, define] of Object.entries(definitions)) {
         name = getType(name).name
@@ -69,14 +84,15 @@ export async function fetchOpenApi(url: string) {
                     }
                     if (value.type === "array") {
                         if (value.items) {
-                            if (value.items.$ref) {
-                                const ref = getType(value.items.$ref.replace(/^#\/definitions\//, "")).name
-                                refs.push(() => {
-                                    const target = models.find(e => e.name === ref)
+                            const ref = handleRef(value.items.$ref)
+                            if (ref) {
+                                const name = getType().name
+                                afters.push(() => {
+                                    const target = models.find(e => e.name === name)
                                     if (target) {
                                         property.type = `${getType(target.name).toString()}[]`
                                     } else {
-                                        console.error(`${ref} not found`)
+                                        console.error(`${name} not found`)
                                     }
                                 })
                             } else if (value.items.type) {
@@ -90,7 +106,7 @@ export async function fetchOpenApi(url: string) {
         }
     }
 
-    refs.forEach(e => e())
+    afters.forEach(e => e())
 
     for (let tag of tags) {
         const paths: OpenApiOperation[] = []
@@ -103,8 +119,8 @@ export async function fetchOpenApi(url: string) {
 
                     const response = pathData.responses["200"]
                     if (response.schema) {
-                        if (response.schema.$ref) {
-                            const ref = response.schema.$ref.replace(/^#\/definitions\//, "")
+                        const ref = handleRef(response.schema.$ref)
+                        if (ref) {
                             const target = models.find(e => e.title === ref)
                             const generic = getType(ref)
                             if (target) {
@@ -118,14 +134,17 @@ export async function fetchOpenApi(url: string) {
                     const parameters: OpenApiRequestParams[] = []
 
                     for (let parameter of pathData.parameters) {
-                        const generic = getType(parameter.schema.$ref.replace(/^#\/definitions\//, ""))
-                        const importType = getExternalType(generic, baseTypes)
-                        imports.push(...importType)
-                        parameters.push({
-                            name: parameter.name,
-                            type: generic.toString(),
-                            required: parameter.required
-                        })
+                        const ref = handleRef(parameter.schema.$ref)
+                        if (ref) {
+                            const generic = getType(ref)
+                            const importType = getExternalType(generic, baseTypes)
+                            imports.push(...importType)
+                            parameters.push({
+                                name: parameter.name,
+                                type: generic.toString(),
+                                required: parameter.required
+                            })
+                        }
                     }
 
                     paths.push({ name: pathData.operationId, description: pathData.description, method: method as HttpMethod, path, returnType, parameters })
@@ -142,33 +161,53 @@ export async function fetchOpenApi(url: string) {
             imports
         })
     }
-    console.log(models, modules.map(e => {
-        return {
-            ...e,
-            paths: e.paths.map(f => {
-                return  JSON.stringify(f)
-                
-            }),
-        }
-    }))
+    console.log(
+        models,
+        modules.map(e => {
+            return {
+                ...e,
+                paths: e.paths.map(f => {
+                    return JSON.stringify(f)
+                })
+            }
+        })
+    )
     return { models, modules }
 }
 
-interface ExportType {
-    name: string
-    generic: ExportType[]
-
-    toString(): string
+function splitGeneric(type: string) {
+    const generic: string[] = []
+    let start = 0
+    let isGeneric = false
+    for (let end = 0; end < type.length; end++) {
+        switch (type[end]) {
+            case "<":
+                isGeneric = true
+                break
+            case ">":
+                isGeneric = false
+                break
+            case ",":
+                if (!isGeneric) {
+                    generic.push(type.slice(start, end))
+                    start = end + 1
+                }
+                break
+        }
+    }
+    if (start < type.length) {
+        generic.push(type.slice(start))
+    }
+    return generic
 }
 
-function getType(type: string = "any"): ExportType {
+function getType(type: string = "any"): Type {
     if (!baseTypes.includes(type)) {
         type = type.replaceAll(/«/g, "<").replaceAll(/»/g, ">")
     }
-
     let name = type
 
-    let generic: ExportType[] = []
+    let generic: Type[] = []
 
     if (type.endsWith("[]")) {
         const genericType = getType(type.slice(0, -2))
@@ -180,10 +219,8 @@ function getType(type: string = "any"): ExportType {
         if (startIndex > -1) {
             name = type.slice(0, startIndex)
             if (endIndex > -1) {
-                generic = type
-                    .slice(startIndex + 1, endIndex)
-                    .split(",")
-                    .map(e => getType(e))
+                type = type.slice(startIndex + 1, endIndex)
+                generic = splitGeneric(type).map(e => getType(e))
             }
         }
 
@@ -208,12 +245,6 @@ interface ExportOptions {
 
     transformTypes?: (types: string) => string
 
-    transformModule?: (module: string) => string
-
-    transformModuleHeader?: (module: string) => string
-
-    transformModuleBody?: (module: string) => string
-
     transformModuleFooter?: string
 
     transformModuleName?: (module: string) => string
@@ -228,7 +259,6 @@ interface ExportOptions {
 
     commonTypes?: string[]
 
-
     transformModelType?: (type: string) => string
 }
 
@@ -237,19 +267,19 @@ export async function generate(option: ExportOptions) {
     fs.mkdirSync(dir, { recursive: true })
     const { models, modules } = await fetchOpenApi(url)
 
-    const typeTemplate =  fs.readFileSync(path.resolve(process.cwd(),"templates/types.njk"),"utf-8")
+    const typeTemplate = fs.readFileSync(path.resolve(process.cwd(), "templates/types.njk"), "utf-8")
 
     nunjucks.configure({
-        autoescape: false,
+        autoescape: false
     })
 
-    const typeCode = nunjucks.renderString(typeTemplate,{models})
+    const typeCode = nunjucks.renderString(typeTemplate, { models })
     writeCode(`${dir}/types.ts`, typeCode)
 
-    const moduleTemplate = fs.readFileSync(path.resolve(process.cwd(),"templates/module.njk"),"utf-8")
+    const moduleTemplate = fs.readFileSync(path.resolve(process.cwd(), "templates/module.njk"), "utf-8")
 
     for (let module of modules) {
-        const code = nunjucks.renderString(moduleTemplate,module)
+        const code = nunjucks.renderString(moduleTemplate, module)
         writeCode(`${dir}/${module.name}.ts`, code)
     }
 
@@ -269,4 +299,4 @@ export function writeCode(target: string, code: string) {
     fs.writeFileSync(target, code)
 }
 
-
+console.log(getType("A<B,C,D<FS,AQ>,RS[],List<Set<Product<S,B>>>").toString())

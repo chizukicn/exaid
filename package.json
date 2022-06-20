@@ -1,6 +1,6 @@
 {
-    "name": "swagger-export",
-    "version": "1.0.0",
+    "name": "openapi-export",
+    "version": "0.0.1",
     "description": "",
     "main": "index.js",
     "scripts": {
