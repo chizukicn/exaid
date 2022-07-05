@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es2017",
+        "target": "esnext",
         "module": "esnext",
         "lib": ["esnext", "DOM"],
         "moduleResolution": "node",
@@ -16,6 +16,7 @@
         "jsx": "preserve",
         "baseUrl": ".",
         "paths": {
+            "openapi-export": ["packages/core/src/index.ts"]
         }
     }
 }

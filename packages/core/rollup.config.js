@@ -1,7 +1,7 @@
-import esbuild from "rollup-plugin-esbuild"
-import dts from "rollup-plugin-dts"
 import commonjs from "@rollup/plugin-commonjs"
 import { defineConfig } from "rollup"
+import dts from "rollup-plugin-dts"
+import esbuild from "rollup-plugin-esbuild"
 import { dependencies, devDependencies } from "./package.json"
 
 const entry = ["src/index.ts"]

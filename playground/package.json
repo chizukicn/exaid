@@ -1,17 +1,19 @@
 {
-    "name": "swagger-export",
-    "version": "1.0.0",
+    "name": "playground",
+    "version": "0.0.1",
     "description": "",
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "rollup -c rollup.config.js && node ./dist/index.mjs",
-        "build": "rollup -c rollup.config.js"
+        "build": "rollup -c ./rollup.config.js"
     },
     "keywords": [],
     "author": "",
     "license": "MIT",
     "dependencies": {
-        "openapi-export": "workspace:*"
+        "openapi-export": "workspace:*",
+        "axios": "^0.27.2"
     }
 }
+

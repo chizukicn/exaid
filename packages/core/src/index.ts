@@ -1,17 +1,16 @@
 import axios from "axios"
+import { render } from "ejs"
 import fs from "fs"
 import nunjucks from "nunjucks"
 import type { OpenApiModel, OpenApiModelProperty, OpenApiModule, OpenApiOperation, OpenApiRequestParams, OpenApiResult } from "open-api"
-import path from "path"
 import prettier from "prettier"
+import { deafaultModuleFooterTemplate, defaultModuleBodyTempalte, defaultModuleHeaderTemplate, defaultModuleTemplate, defaultTypesTemplate } from "./templates"
 
-const baseTypes = ["string", "number", "boolean", "Array", "any", "void", "undefined", "null"]
+const baseTypes = ["string", "number", "boolean", "array", "any", "void", "undefined", "null"]
 
 export type HttpMethod = "get" | "post" | "put" | "delete" | "patch" | "head" | "options" | "trace" | "connect" | "link" | "unlink"
 
 export type HttpStatusCode = "200" | "201" | "401" | "403" | "404"
-
-export type OpenApiBaseType = "string" | "number" | "integer" | "boolean" | "array" | "object" | "file" | "binary" | "null"
 
 const typeMap: Record<string, string> = {
     integer: "number",
@@ -21,9 +20,11 @@ const typeMap: Record<string, string> = {
     double: "number",
     date: "string",
     int: "number",
-    List: "Array",
+    List: "array",
+    object: "Record",
     Map: "Record",
-    Set: "Array"
+    Set: "array",
+    file: "File"
 }
 
 export interface Type {
@@ -50,9 +51,10 @@ export interface FetchOpenApiOptions {
 
 const REF_REGEX = /^#\/definitions\//g
 
-function handleRef(ref: string = "") {
-    if (REF_REGEX.test(ref)) {
-        return ref.replace(/^#\/definitions\//, "")
+function handleRef(ref?: string) {
+    console.log(ref, ref?.match(REF_REGEX))
+    if (ref && REF_REGEX.test(ref)) {
+        return ref.replace(REF_REGEX, "")
     }
 }
 
@@ -109,45 +111,69 @@ export async function fetchOpenApi(url: string) {
     afters.forEach(e => e())
 
     for (let tag of tags) {
-        const paths: OpenApiOperation[] = []
+        const operations: OpenApiOperation[] = []
         let imports: string[] = []
 
         for (let [path, record] of Object.entries(result.paths)) {
+            path = path.replace(/\{([^\}]+)\}/g, "${$1}")
             for (let [method, pathData] of Object.entries(record)) {
                 if (pathData.tags.includes(tag.name)) {
                     let returnType = "any"
 
                     const response = pathData.responses["200"]
-                    if (response.schema) {
-                        const ref = handleRef(response.schema.$ref)
-                        if (ref) {
-                            const target = models.find(e => e.title === ref)
-                            const generic = getType(ref)
-                            if (target) {
-                                returnType = generic.toString()
-                                const importType = getExternalType(generic, baseTypes)
-                                imports.push(...importType)
+                    if (response) {
+                        const { type, schema } = response
+                        console.log("type", type)
+                        console.log("schema", schema)
+                        if (type) {
+                            returnType = getType(type).toString()
+                            console.log(returnType)
+                        } else if (schema) {
+                            const ref = handleRef(schema.$ref)
+                            console.log("ref", ref)
+                            if (ref) {
+                                console.log(ref)
+                                const target = models.find(e => e.name === ref)
+                                const generic = getType(ref)
+                                if (target) {
+                                    returnType = generic.toString()
+                                    const importType = getExternalType(generic, baseTypes)
+                                    imports.push(...importType)
+                                }
                             }
                         }
                     }
+                    console.log("returnType", returnType)
 
                     const parameters: OpenApiRequestParams[] = []
 
                     for (let parameter of pathData.parameters) {
-                        const ref = handleRef(parameter.schema.$ref)
-                        if (ref) {
-                            const generic = getType(ref)
-                            const importType = getExternalType(generic, baseTypes)
-                            imports.push(...importType)
-                            parameters.push({
-                                name: parameter.name,
-                                type: generic.toString(),
-                                required: parameter.required
-                            })
+                        let { type, schema } = parameter
+
+                        let paramterType: string = "any"
+
+                        if (!type) {
+                            if (schema?.$ref) {
+                                const ref = handleRef(schema?.$ref)
+                                if (ref) {
+                                    const generic = getType(ref)
+                                    const importType = getExternalType(generic, baseTypes)
+                                    imports.push(...importType)
+                                    paramterType = generic.toString()
+                                }
+                            }
+                        } else {
+                            paramterType = getType(type).toString()
                         }
+                        parameters.push({
+                            in: parameter.in,
+                            name: parameter.name,
+                            type: paramterType,
+                            required: parameter.required
+                        })
                     }
 
-                    paths.push({ name: pathData.operationId, description: pathData.description, method: method as HttpMethod, path, returnType, parameters })
+                    operations.push({ name: pathData.operationId, description: pathData.description, method: method as HttpMethod, path, returnType, parameters })
                 }
             }
         }
@@ -157,22 +183,12 @@ export async function fetchOpenApi(url: string) {
         modules.push({
             name: tag.name,
             description: tag.description,
-            paths,
+            operations,
             imports
         })
     }
-    console.log(
-        models,
-        modules.map(e => {
-            return {
-                ...e,
-                paths: e.paths.map(f => {
-                    return JSON.stringify(f)
-                })
-            }
-        })
-    )
-    return { models, modules }
+
+    return { models, modules, result }
 }
 
 function splitGeneric(type: string) {
@@ -211,7 +227,7 @@ function getType(type: string = "any"): Type {
 
     if (type.endsWith("[]")) {
         const genericType = getType(type.slice(0, -2))
-        name = "Array"
+        name = "array"
         generic = [genericType]
     } else {
         const startIndex = type.indexOf("<")
@@ -231,12 +247,19 @@ function getType(type: string = "any"): Type {
         name,
         generic,
         toString() {
-            if (name == "Array") {
-                return `${generic[0].toString()}[]`
+            if (name == "array") {
+                return `${generic[0]?.toString() ?? "any"}[]`
             }
             return generic.length > 0 ? `${name}<${generic.map(e => e.toString()).join(",")}>` : name
         }
     }
+}
+
+interface ExportModuleTemplate {
+    header?: string
+    body?: string
+    footer?: string
+    wrapper?: string
 }
 
 interface ExportOptions {
@@ -248,6 +271,8 @@ interface ExportOptions {
     transformModuleFooter?: string
 
     transformModuleName?: (module: string) => string
+
+    moduleTemplate?: ExportModuleTemplate
 
     transformReturnType?: (returnType: string) => string
 
@@ -263,31 +288,37 @@ interface ExportOptions {
 }
 
 export async function generate(option: ExportOptions) {
-    const { dir = ".spec", url } = option
-    fs.mkdirSync(dir, { recursive: true })
-    const { models, modules } = await fetchOpenApi(url)
+    const { dir = ".spec", url, moduleTemplate } = option
+    const { header = defaultModuleHeaderTemplate, body = defaultModuleBodyTempalte, footer = deafaultModuleFooterTemplate, wrapper = defaultModuleTemplate } = moduleTemplate ?? {}
 
-    const typeTemplate = fs.readFileSync(path.resolve(process.cwd(), "templates/types.njk"), "utf-8")
+    fs.mkdirSync(dir, { recursive: true })
+    const { models, modules, result } = await fetchOpenApi(url)
 
     nunjucks.configure({
         autoescape: false
     })
 
-    const typeCode = nunjucks.renderString(typeTemplate, { models })
+    const typeCode = render(defaultTypesTemplate, { models })
     writeCode(`${dir}/types.ts`, typeCode)
 
-    const moduleTemplate = fs.readFileSync(path.resolve(process.cwd(), "templates/module.njk"), "utf-8")
-
     for (let module of modules) {
-        const code = nunjucks.renderString(moduleTemplate, module)
+        const moduleHeader = render(header, module)
+        const moduleBody = render(body, module)
+        const moduleFooter = render(footer, module)
+        const code = render(wrapper, { ...module, moduleHeader, moduleBody, moduleFooter }, { escape: m => m })
         writeCode(`${dir}/${module.name}.ts`, code)
     }
 
-    let manifest = JSON.stringify({ models, modules })
+    writeJson(`${dir}/manifest.json`, { models, modules })
+    writeJson(`${dir}/docs.json`, result)
+}
+
+function writeJson(target: string, data: any) {
+    let json = JSON.stringify(data, null, 2)
     try {
-        manifest = prettier.format(manifest, { parser: "json" })
+        json = prettier.format(json, { parser: "json" })
     } catch {}
-    fs.writeFileSync(`${dir}/manifest.json`, manifest)
+    fs.writeFileSync(target, json)
 }
 
 export function writeCode(target: string, code: string) {
@@ -298,5 +329,3 @@ export function writeCode(target: string, code: string) {
     }
     fs.writeFileSync(target, code)
 }
-
-console.log(getType("A<B,C,D<FS,AQ>,RS[],List<Set<Product<S,B>>>").toString())

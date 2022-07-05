@@ -4,7 +4,7 @@ import dts from "rollup-plugin-dts"
 import esbuild from "rollup-plugin-esbuild"
 import { dependencies, devDependencies } from "./package.json"
 
-const entry = ["src/index.ts"]
+const entry = ["./index.ts"]
 
 const external = Object.keys(dependencies ?? {}).concat(Object.keys(devDependencies ?? {}))
 
