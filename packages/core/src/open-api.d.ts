@@ -4,13 +4,20 @@ declare module "open-api" {
     export type OpenApiParamterIn = "query" | "header" | "path" | "cookie" | "formData"
 
     export interface OpenApiSchema {
-        $ref: string
+        $ref?: string
         type?: OpenApiBaseType
+        items?: OpenApiSchema
     }
 
     export interface OpenApiTag {
         name: string
         description: string
+    }
+
+    export interface OpenApiFeild {
+        type: OpenApiBaseType
+        schema?: OpenApiSchema
+        items?: OpenApiSchema
     }
     export interface OpenApiPath {
         tags: string[]
@@ -19,18 +26,15 @@ declare module "open-api" {
         operationId: string
         consumes: string[]
         produces: string[]
-        parameters: {
-            in: OpenApiParamterIn
+        parameters: (OpenApiFeild & {
             name: string
+            in: OpenApiParamterIn
             description: string
             required: boolean
-            type: OpenApiBaseType
-            schema?: OpenApiSchema
-        }[]
+        })[]
         responses: Record<
             HttpStatusCode,
             {
-                type: OpenApiBaseType
                 description: string
                 schema?: OpenApiSchema
             }

@@ -47,5 +47,30 @@ export default defineConfig(() => [
             format: "esm"
         },
         plugins: [dts()]
+    },
+
+    {
+        external,
+        input: ["src/bin.ts"],
+        output: {
+            dir: "bin",
+            entryFileNames: "index.js",
+            format: "cjs"
+        },
+        plugins: [
+            commonjs(),
+            esbuild({
+                target: "es6"
+            })
+        ]
+    },
+    {
+        external,
+        input: ["src/bin.ts"],
+        output: {
+            file: "dist/bin.d.ts",
+            format: "esm"
+        },
+        plugins: [dts()]
     }
 ])

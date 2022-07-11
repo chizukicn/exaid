@@ -3,6 +3,7 @@
     "version": "0.0.1",
     "description": "",
     "main": "dist/index.js",
+    "bin": "bin/index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "rollup -c rollup.config.js && node ./dist/index.mjs",
@@ -26,6 +27,8 @@
         "ejs": "^3.1.8",
         "fetch-openapi": "^12.0.0",
         "nunjucks": "^3.2.3",
+        "openapi-export": "^0.0.1",
         "prettier": "^2.6.2"
     }
 }
+
