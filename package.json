@@ -1,7 +1,7 @@
 {
     "name": "@openapi-export/monorepo",
     "private": true,
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "openapi export to typescript",
     "files": [
         "dist/*"
@@ -43,4 +43,3 @@
         "unbuild": "^0.7.6"
     }
 }
-

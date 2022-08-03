@@ -1,6 +1,6 @@
 {
     "name": "openapi-export",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "",
     "main": "dist/index.js",
     "bin": "bin/index.js",
@@ -30,4 +30,3 @@
         "prettier": "^2.6.2"
     }
 }
-
