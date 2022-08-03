@@ -112,9 +112,11 @@ export async function fetchOpenApi(url: string) {
                         returnType = getFeildType(response.schema, imports)
                     }
 
+                    const params = pathData.parameters ?? []
+
                     const parameters: OpenApiRequestParams[] = []
 
-                    for (let parameter of pathData.parameters) {
+                    for (let parameter of params) {
                         let { type, schema, items } = parameter
 
                         const paramterType = getFeildType({ items, type, ...schema }, imports)
