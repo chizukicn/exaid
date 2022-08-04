@@ -1,0 +1,38 @@
+{
+    "name": "@openapi-export/monorepo",
+    "private": true,
+    "version": "0.0.4",
+    "description": "openapi export to typescript",
+    "files": [
+        "dist/*"
+    ],
+    "keywords": [
+        "openapi"
+    ],
+    "scripts": {
+        "build": "rimraf packages/*/dist && pnpm -r --filter=./packages/* run build",
+        "play": "pnpm -r --filter=./playground dev",
+        "bump": "bumpp package.json packages/*/package.json --commit --push --tag",
+        "postinstall": "husky install"
+    },
+    "author": "chizuki",
+    "license": "MIT",
+    "lint-staged": {
+        "*.{js,jsx,ts,tsx}": [
+            "prettier --write"
+        ]
+    },
+    "devDependencies": {
+        "@types/node": "^17.0.23",
+        "bumpp": "^7.1.1",
+        "esno": "^0.16.3",
+        "husky": "^7.0.4",
+        "lint-staged": "^12.3.7",
+        "openapi-types": "^12.0.0",
+        "prettier": "^2.6.2",
+        "rimraf": "^3.0.2",
+        "typescript": "^4.7.4",
+        "unbuild": "^0.7.6"
+    }
+}
+
