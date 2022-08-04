@@ -1,6 +1,6 @@
 {
     "name": "openapi-export",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "",
     "main": "dist/index.cjs",
     "bin": "dist/bin.cjs",
@@ -27,4 +27,3 @@
         "prettier": "^2.6.2"
     }
 }
-
