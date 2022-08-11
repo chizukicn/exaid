@@ -12,6 +12,7 @@
     "scripts": {
         "build": "rimraf packages/*/dist && pnpm -r --filter=./packages/* run build",
         "play": "pnpm -r --filter=./playground dev",
+        "export": "pnpm -r --filter=./packages/* export",
         "bump": "bumpp package.json packages/*/package.json --commit --push --tag",
         "postinstall": "husky install"
     },
@@ -35,3 +36,4 @@
         "unbuild": "^0.7.6"
     }
 }
+

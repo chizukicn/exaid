@@ -6,8 +6,7 @@
     "private": true,
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "dev": "esno ./index.ts",
-        "build": "unbuild"
+        "dev": "esno ./index.ts"
     },
     "keywords": [],
     "author": "",

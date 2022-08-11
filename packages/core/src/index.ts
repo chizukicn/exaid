@@ -1,6 +1,7 @@
 import axios from "axios"
 import { render } from "ejs"
 import fs from "fs"
+import json5 from "json5"
 import type { OpenApiModel, OpenApiModelProperty, OpenApiModule, OpenApiOperation, OpenApiRequestParams, OpenApiResult, OpenApiSchema } from "open-api"
 import prettier from "prettier"
 import { deafaultModuleFooterTemplate, defaultModuleBodyTempalte, defaultModuleHeaderTemplate, defaultModuleTemplate, defaultTypesTemplate } from "./templates"
@@ -46,7 +47,11 @@ function getFeildType(feild: OpenApiSchema, imports: string[] = []): string {
 }
 
 export async function fetchOpenApi(url: string) {
-    const result = await axios.get<OpenApiResult>(url).then(r => r.data)
+    const result = await axios
+        .get<string>(url, {
+            responseType: "text"
+        })
+        .then(r => json5.parse(r.data) as OpenApiResult)
     const tags = result.tags ?? []
     const definitions = result.definitions ?? {}
 
@@ -62,7 +67,7 @@ export async function fetchOpenApi(url: string) {
             models.push({
                 name,
                 title: define.title,
-                properties: Object.entries(define.properties).reduce<OpenApiModelProperty[]>((acc, [key, value]) => {
+                properties: Object.entries(define.properties ?? {}).reduce<OpenApiModelProperty[]>((acc, [key, value]) => {
                     const type = getType(value.type)
 
                     const property: OpenApiModelProperty = {
@@ -186,13 +191,13 @@ export async function generate(option: ExportOptions) {
     fs.mkdirSync(dir, { recursive: true })
     const { models, modules, result } = await fetchOpenApi(url)
 
-    const typeCode = render(defaultTypesTemplate, { models })
+    const typeCode = render(defaultTypesTemplate, { models }, { escape: m => m })
     writeCode(`${dir}/types.ts`, typeCode)
 
     for (let module of modules) {
-        const moduleHeader = render(header, module)
-        const moduleBody = render(body, module)
-        const moduleFooter = render(footer, module)
+        const moduleHeader = render(header, module, { escape: m => m })
+        const moduleBody = render(body, module, { escape: m => m })
+        const moduleFooter = render(footer, module, { escape: m => m })
         const code = render(wrapper, { ...module, moduleHeader, moduleBody, moduleFooter }, { escape: m => m })
         writeCode(`${dir}/${module.name}.ts`, code)
     }
