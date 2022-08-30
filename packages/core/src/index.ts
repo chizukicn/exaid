@@ -18,7 +18,6 @@ export interface FetchOpenApiOptions {
 const REF_REGEX = /^#\/definitions\//g
 
 function handleRef(ref?: string) {
-    console.log(ref, ref?.match(REF_REGEX))
     if (ref && REF_REGEX.test(ref)) {
         return ref.replace(REF_REGEX, "")
     }
@@ -47,11 +46,17 @@ function getFeildType(feild: OpenApiSchema, imports: string[] = []): string {
 }
 
 export async function fetchOpenApi(url: string) {
-    const result = await axios
+    const result: OpenApiResult = await axios
         .get<string>(url, {
             responseType: "text"
         })
-        .then(r => json5.parse(r.data) as OpenApiResult)
+        .then(r => {
+            if (typeof r.data == "string") {
+                return json5.parse(r.data)
+            }
+            return r.data
+        })
+
     const tags = result.tags ?? []
     const definitions = result.definitions ?? {}
 
