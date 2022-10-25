@@ -2,15 +2,11 @@ import axios from "axios"
 import { render } from "ejs"
 import fs from "fs"
 import json5 from "json5"
-import type { OpenApiModel, OpenApiModelProperty, OpenApiModule, OpenApiOperation, OpenApiRequestParams, OpenApiResult, OpenApiSchema } from "open-api"
 import prettier from "prettier"
 import { ExaidConfig } from "./config"
 import { defaultModuleBodyTemplate, defaultModuleFooterTemplate, defaultModuleHeaderTemplate, defaultModuleTemplate, defaultTypesTemplate } from "./templates"
-import { getExternalType, getType } from "./type"
-
-export type HttpMethod = "get" | "post" | "put" | "delete" | "patch" | "head" | "options" | "trace" | "connect" | "link" | "unlink"
-
-export type HttpStatusCode = "200" | "201" | "401" | "403" | "404"
+import type { HttpMethod, OpenApiModel, OpenApiModelProperty, OpenApiModule, OpenApiOperation, OpenApiRequestParams, OpenApiResult, OpenApiSchema } from "./types"
+import { getExternalType, getType } from "./utils"
 
 export interface FetchOpenApiOptions {
     url?: string
@@ -24,26 +20,26 @@ function handleRef(ref?: string) {
     }
 }
 
-function getFelidType(feild: OpenApiSchema, imports: string[] = []): string {
-    let { type, $ref, items } = feild
+function getFieldType(field: OpenApiSchema, imports: string[] = []): string {
+    let { type, $ref, items } = field
 
-    let paramterType: string = "any"
+    let parameterType: string = "any"
     let refType = handleRef($ref)
     if (refType) {
         const generic = getType(refType)
         const importType = getExternalType(generic)
         imports.push(...importType)
-        paramterType = generic.toString()
+        parameterType = generic.toString()
     } else if (type) {
         if (type == "array") {
             if (items) {
-                paramterType = getType("array", [getFelidType({ $ref, ...items }, imports)]).toString()
+                parameterType = getType("array", [getFieldType({ $ref, ...items }, imports)]).toString()
             }
         } else {
-            paramterType = getType(type).toString()
+            parameterType = getType(type).toString()
         }
     }
-    return paramterType
+    return parameterType
 }
 
 export async function fetchOpenApi(url: string) {
@@ -120,7 +116,7 @@ export async function fetchOpenApi(url: string) {
 
                     const response = pathData.responses["200"]
                     if (response?.schema) {
-                        returnType = getFelidType(response.schema, imports)
+                        returnType = getFieldType(response.schema, imports)
                     }
 
                     const params = pathData.parameters ?? []
@@ -130,12 +126,12 @@ export async function fetchOpenApi(url: string) {
                     for (let parameter of params) {
                         let { type, schema, items } = parameter
 
-                        const paramterType = getFelidType({ items, type, ...schema }, imports)
+                        const parameterType = getFieldType({ items, type, ...schema }, imports)
 
                         parameters.push({
                             in: parameter.in,
                             name: parameter.name,
-                            type: paramterType,
+                            type: parameterType,
                             required: parameter.required
                         })
                     }

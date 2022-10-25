@@ -16,5 +16,5 @@
             "exaid": ["./packages/core/src/index.ts"]
         }
     },
-    "include": ["./playground/**/*.ts", "./playground/**/*.tsx", "./packages/**/*.ts"]
+    "include": ["./playground/**/*.ts", "./playground/**/*.tsx", "./packages/**/*.ts", "./packages/**/*.d.ts"]
 }
