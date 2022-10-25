@@ -1,6 +1,6 @@
 {
     "name": "exaid",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "description": "",
     "main": "dist/index.cjs",
     "module": "dist/index.mjs",
@@ -35,4 +35,3 @@
         "unconfig": "^0.3.7"
     }
 }
-
