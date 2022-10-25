@@ -31,8 +31,8 @@
         "esbuild": "^0.15.6",
         "json5": "^2.2.1",
         "nunjucks": "^3.2.3",
-        "exaid": "workspace:*",
         "prettier": "^2.6.2",
         "unconfig": "^0.3.7"
     }
 }
+
