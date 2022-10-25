@@ -1,5 +1,5 @@
 {
-    "name": "@openapi-export/monorepo",
+    "name": "@exaid/monorepo",
     "private": true,
     "version": "0.0.6",
     "description": "openapi export to typescript",
@@ -7,12 +7,13 @@
         "dist/*"
     ],
     "keywords": [
-        "openapi"
+        "openapi",
+        "exaid"
     ],
     "scripts": {
         "build": "rimraf packages/*/dist && pnpm -r --filter=./packages/* run build",
         "play": "pnpm -r --filter=./playground dev",
-        "export": "pnpm -r --filter=./packages/* export",
+        "stub": "pnpm -r --filter=./packages/* stub",
         "bump": "bumpp package.json packages/*/package.json --commit --push --tag",
         "postinstall": "husky install"
     },
@@ -29,10 +30,10 @@
         "esno": "^0.16.3",
         "husky": "^8.0.1",
         "lint-staged": "^13.0.3",
-        "openapi-types": "^12.0.0",
         "prettier": "^2.7.1",
         "rimraf": "^3.0.2",
-        "typescript": "^4.7.4",
+        "typescript": "^4.8.4",
         "unbuild": "^0.7.6"
     }
 }
+

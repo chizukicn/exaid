@@ -1,13 +1,15 @@
 {
-    "name": "openapi-export",
+    "name": "exaid",
     "version": "0.0.6",
     "description": "",
     "main": "dist/index.cjs",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
     "bin": "dist/bin.cjs",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "build": "unbuild",
-        "export": "esno src/bin.ts"
+        "stub": "unbuild --stub"
     },
     "keywords": [],
     "author": "chizuki",
@@ -16,15 +18,20 @@
         "@types/ejs": "^3.1.1",
         "@types/node": "^17.0.42",
         "@types/nunjucks": "^3.2.1",
-        "@types/prettier": "^2.6.3"
+        "@types/prettier": "^2.6.3",
+        "openapi-types": "^12.0.0",
+        "unbuild": "^0.7.6"
     },
     "dependencies": {
         "axios": "^0.27.2",
         "commander": "^9.3.0",
         "ejs": "^3.1.8",
+        "esbuild": "^0.15.6",
         "json5": "^2.2.1",
         "nunjucks": "^3.2.3",
-        "openapi-export": "workspace:*",
-        "prettier": "^2.6.2"
+        "exaid": "workspace:*",
+        "prettier": "^2.6.2",
+        "unconfig": "^0.3.7"
     }
 }
+

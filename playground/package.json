@@ -6,14 +6,14 @@
     "private": true,
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "dev": "esno ./index.ts"
+        "dev": "exaid https://petstore.swagger.io/v2/swagger.json"
     },
     "keywords": [],
     "author": "",
     "license": "MIT",
     "dependencies": {
-        "openapi-export": "workspace:*",
-        "axios": "^0.27.2"
+        "axios": "^0.27.2",
+        "exaid": "workspace:*"
     }
 }
 

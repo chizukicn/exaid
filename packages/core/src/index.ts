@@ -4,7 +4,8 @@ import fs from "fs"
 import json5 from "json5"
 import type { OpenApiModel, OpenApiModelProperty, OpenApiModule, OpenApiOperation, OpenApiRequestParams, OpenApiResult, OpenApiSchema } from "open-api"
 import prettier from "prettier"
-import { deafaultModuleFooterTemplate, defaultModuleBodyTempalte, defaultModuleHeaderTemplate, defaultModuleTemplate, defaultTypesTemplate } from "./templates"
+import { ExaidConfig } from "./config"
+import { defaultModuleBodyTemplate, defaultModuleFooterTemplate, defaultModuleHeaderTemplate, defaultModuleTemplate, defaultTypesTemplate } from "./templates"
 import { getExternalType, getType } from "./type"
 
 export type HttpMethod = "get" | "post" | "put" | "delete" | "patch" | "head" | "options" | "trace" | "connect" | "link" | "unlink"
@@ -23,7 +24,7 @@ function handleRef(ref?: string) {
     }
 }
 
-function getFeildType(feild: OpenApiSchema, imports: string[] = []): string {
+function getFelidType(feild: OpenApiSchema, imports: string[] = []): string {
     let { type, $ref, items } = feild
 
     let paramterType: string = "any"
@@ -36,7 +37,7 @@ function getFeildType(feild: OpenApiSchema, imports: string[] = []): string {
     } else if (type) {
         if (type == "array") {
             if (items) {
-                paramterType = getType("array", [getFeildType({ $ref, ...items }, imports)]).toString()
+                paramterType = getType("array", [getFelidType({ $ref, ...items }, imports)]).toString()
             }
         } else {
             paramterType = getType(type).toString()
@@ -119,7 +120,7 @@ export async function fetchOpenApi(url: string) {
 
                     const response = pathData.responses["200"]
                     if (response?.schema) {
-                        returnType = getFeildType(response.schema, imports)
+                        returnType = getFelidType(response.schema, imports)
                     }
 
                     const params = pathData.parameters ?? []
@@ -129,7 +130,7 @@ export async function fetchOpenApi(url: string) {
                     for (let parameter of params) {
                         let { type, schema, items } = parameter
 
-                        const paramterType = getFeildType({ items, type, ...schema }, imports)
+                        const paramterType = getFelidType({ items, type, ...schema }, imports)
 
                         parameters.push({
                             in: parameter.in,
@@ -157,41 +158,10 @@ export async function fetchOpenApi(url: string) {
     return { models, modules, result }
 }
 
-interface ExportModuleTemplate {
-    header?: string
-    body?: string
-    footer?: string
-    wrapper?: string
-}
-
-interface ExportOptions {
-    url: string
-    dir?: string
-
-    transformTypes?: (types: string) => string
-
-    transformModuleFooter?: string
-
-    transformModuleName?: (module: string) => string
-
-    moduleTemplate?: ExportModuleTemplate
-
-    transformReturnType?: (returnType: string) => string
-
-    instanceName?: string
-
-    importInstance?: boolean
-
-    instancePackage?: string
-
-    commonTypes?: string[]
-
-    transformModelType?: (type: string) => string
-}
-
-export async function generate(option: ExportOptions) {
+export async function generate(option: ExaidConfig) {
     const { dir = ".spec", url, moduleTemplate } = option
-    const { header = defaultModuleHeaderTemplate, body = defaultModuleBodyTempalte, footer = deafaultModuleFooterTemplate, wrapper = defaultModuleTemplate } = moduleTemplate ?? {}
+
+    const { header = defaultModuleHeaderTemplate, body = defaultModuleBodyTemplate, footer = defaultModuleFooterTemplate, wrapper = defaultModuleTemplate } = moduleTemplate ?? {}
 
     fs.mkdirSync(dir, { recursive: true })
     const { models, modules, result } = await fetchOpenApi(url)
@@ -227,3 +197,5 @@ export function writeCode(target: string, code: string) {
     }
     fs.writeFileSync(target, code)
 }
+
+export * from "./config"

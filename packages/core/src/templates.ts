@@ -1,6 +1,6 @@
-export const paramterTemplate = `<%=  %>`
+export const parameterTemplate = `<%=  %>`
 
-export const defaultModuleBodyTempalte = `{
+export const defaultModuleBodyTemplate = `{
 	<% for(e of operations){ %>
 		/**
 		 <% if (e.title) { -%>
@@ -48,7 +48,7 @@ export const defaultModuleHeaderTemplate = `
 	import axios from "axios";
 	import { <%=imports.join(',')%> } from "./types"
 `
-export const deafaultModuleFooterTemplate = ``
+export const defaultModuleFooterTemplate = ``
 
 export const defaultModuleTemplate = `
 <%= moduleHeader %>
