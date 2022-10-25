@@ -34,10 +34,8 @@ importers:
       commander: ^9.3.0
       ejs: ^3.1.8
       esbuild: ^0.15.6
-      exaid: workspace:*
       json5: ^2.2.1
       nunjucks: ^3.2.3
-      openapi-types: ^12.0.0
       prettier: ^2.6.2
       unbuild: ^0.7.6
       unconfig: ^0.3.7
@@ -46,7 +44,6 @@ importers:
       commander: 9.4.0
       ejs: 3.1.8
       esbuild: 0.15.6
-      exaid: 'link:'
       json5: 2.2.1
       nunjucks: 3.2.3
       prettier: 2.7.1
@@ -56,7 +53,6 @@ importers:
       '@types/node': 17.0.45
       '@types/nunjucks': 3.2.1
       '@types/prettier': 2.6.4
-      openapi-types: 12.0.0
       unbuild: 0.7.6
 
   playground:
@@ -1816,10 +1812,6 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       mimic-fn: 4.0.0
-    dev: true
-
-  /openapi-types/12.0.0:
-    resolution: {integrity: sha512-6Wd9k8nmGQHgCbehZCP6wwWcfXcvinhybUTBatuhjRsCxUIujuYFZc9QnGeae75CyHASewBtxs0HX/qwREReUw==}
     dev: true
 
   /p-map/4.0.0:
