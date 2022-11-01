@@ -155,7 +155,7 @@ export async function fetchOpenApi(url: string) {
 }
 
 export async function generate(option: ExaidConfig) {
-    const { dir = ".spec", url, moduleTemplate } = option
+    const { dir = ".exaid", url, moduleTemplate } = option
 
     const { header = defaultModuleHeaderTemplate, body = defaultModuleBodyTemplate, footer = defaultModuleFooterTemplate, wrapper = defaultModuleTemplate } = moduleTemplate ?? {}
 

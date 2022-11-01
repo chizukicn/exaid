@@ -24,13 +24,6 @@ program
                     rewrite(config: any) {
                         return config.exaid
                     }
-                },
-                {
-                    files: "vite.config",
-                    async rewrite(config: any) {
-                        config = await (typeof config === "function" ? config() : config)
-                        return config.exaid
-                    }
                 }
             ],
             merge: false,

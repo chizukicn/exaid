@@ -8,5 +8,5 @@ node_modules
 dist
 dist-ssr
 *.local
-.spec
+.exaid
 bin
