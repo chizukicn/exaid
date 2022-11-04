@@ -11,12 +11,15 @@ const typeMap: Record<string, string> = {
     List: "array",
     Map: "Record",
     Set: "array",
-    file: "File"
+    file: "File",
+    String: "string",
+    Array: "array",
+    Void: "void"
 }
 
 export interface Type {
     name: string
-    generic: Type[]
+    generics: Type[]
     toString(): string
 }
 
@@ -74,7 +77,7 @@ export function getType(type: string = "any", generics: string[] = []): Type {
 
     return {
         name,
-        generic,
+        generics: generic,
         toString() {
             if (name == "array") {
                 return `${generic[0]?.toString() ?? "any"}[]`
@@ -90,8 +93,8 @@ export function getExternalType(param: string | Type, lib: string[] = []): strin
     if (!lib.includes(type.name) && !baseTypes.includes(type.name)) {
         types.push(type.name)
     }
-    if (type.generic.length) {
-        type.generic.forEach(e => types.push(...getExternalType(e, lib)))
+    if (type.generics.length) {
+        type.generics.forEach(e => types.push(...getExternalType(e, lib)))
     }
     return types
 }

@@ -46,7 +46,7 @@ export const defaultModuleBodyTemplate = `{
 
 export const defaultModuleHeaderTemplate = `
 	import axios from "axios";
-	import { <%=imports.join(',')%> } from "./types"
+	import { <%=imports.join(',')%> } from "../types"
 `
 export const defaultModuleFooterTemplate = ``
 
@@ -63,7 +63,7 @@ export const defaultTypesTemplate = `
 	* @title <%=model.title%>
 	*/
 	<% } -%>
-	export interface <%=model.name%> {
+	export interface <%=model.name%><%= model.generics.length  >0 ? '<'+ model.generics.join(',')+'>' : '' %> {
 		<% for(prop of model.properties){ %>
 			<% if (prop.description) { %>
 			/**

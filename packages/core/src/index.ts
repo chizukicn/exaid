@@ -64,36 +64,57 @@ export async function fetchOpenApi(url: string) {
     const afters: (() => void)[] = []
 
     for (let [name, define] of Object.entries(definitions)) {
-        name = getType(name).name
-        if (!models.find(e => e.name === name)) {
+        const defType = getType(name)
+        if (!models.find(e => e.name === defType.name)) {
             models.push({
-                name,
+                name: defType.name,
                 title: define.title,
+                generics: defType.generics.map(e => e.name),
                 properties: Object.entries(define.properties ?? {}).reduce<OpenApiModelProperty[]>((acc, [key, value]) => {
-                    const type = getType(value.type)
-
                     const property: OpenApiModelProperty = {
                         ...value,
                         name: key,
-                        required: define.required?.includes(key),
-                        type: type.toString()
+                        required: define.required?.includes(key)
                     }
-                    if (value.type === "array") {
-                        if (value.items) {
-                            const ref = handleRef(value.items.$ref)
-                            if (ref) {
-                                const name = getType().name
-                                afters.push(() => {
-                                    const target = models.find(e => e.name === name)
-                                    if (target) {
-                                        property.type = `${getType(target.name).toString()}[]`
-                                    } else {
-                                        console.error(`${name} not found`)
-                                    }
-                                })
-                            } else if (value.items.type) {
-                                property.type = getType("array", [value.items.type]).toString()
+
+                    if (value.type) {
+                        const type = getType(value.type)
+                        if (type.name === "array") {
+                            if (value.items) {
+                                const ref = handleRef(value.items.$ref)
+                                if (ref) {
+                                    const refType = getType(ref)
+                                    const name = refType.name
+                                    afters.push(() => {
+                                        const target = models.find(e => e.name === name)
+                                        if (target) {
+                                            property.type = `${refType.toString()}[]`
+                                        } else {
+                                            console.error(`${name} not found`)
+                                        }
+                                    })
+                                } else if (value.items.type) {
+                                    property.type = getType("array", [value.items.type]).toString()
+                                }
                             }
+                        } else {
+                            if (defType.generics.some(r => r.name === type.name)) {
+                            }
+                            property.type = type.toString()
+                        }
+                    } else if (value.$ref) {
+                        const ref = handleRef(value.$ref)
+                        if (ref) {
+                            const refType = getType(ref)
+                            const name = refType.name
+                            afters.push(() => {
+                                const target = models.find(e => e.name === name)
+                                if (target) {
+                                    property.type = refType.toString()
+                                } else {
+                                    console.error(`${name} not found`)
+                                }
+                            })
                         }
                     }
                     return acc.concat([property])
@@ -165,12 +186,14 @@ export async function generate(option: ExaidConfig) {
     const typeCode = render(defaultTypesTemplate, { models }, { escape: m => m })
     writeCode(`${dir}/types.ts`, typeCode)
 
+    fs.mkdirSync(`${dir}/modules`, { recursive: true })
+
     for (let module of modules) {
         const moduleHeader = render(header, module, { escape: m => m })
         const moduleBody = render(body, module, { escape: m => m })
         const moduleFooter = render(footer, module, { escape: m => m })
         const code = render(wrapper, { ...module, moduleHeader, moduleBody, moduleFooter }, { escape: m => m })
-        writeCode(`${dir}/${module.name}.ts`, code)
+        writeCode(`${dir}/modules/${module.name}.ts`, code)
     }
 
     writeJson(`${dir}/manifest.json`, { models, modules })

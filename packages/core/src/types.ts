@@ -46,6 +46,7 @@ export interface OpenApiPath {
 
 export interface OpenApiProperty {
     type: OpenApiBaseType
+    $ref?: string
     items?: OpenApiSchema
     description: string
     format?: string
@@ -91,6 +92,7 @@ export interface OpenApiModel {
     name: string
     title?: string
     properties: OpenApiModelProperty[]
+    generics?: string[]
 }
 
 export interface OpenApiRequestParams {
