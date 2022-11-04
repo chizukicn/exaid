@@ -33,6 +33,10 @@ program
                 target: cmd.target
             }
         })
+        if (!config.url) {
+            console.error("missing required argument 'url'")
+            process.exit(1)
+        }
         await generate(config)
     })
     .version(`exaid@${version}`, "-v, --version", "output the current version")
