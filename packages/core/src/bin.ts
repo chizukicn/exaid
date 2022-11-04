@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { program } from "commander"
 import { loadConfig } from "unconfig"
+import { version } from "../package.json"
 import type { ExaidConfig } from "./config"
 import { generate } from "./index"
 
@@ -34,4 +35,5 @@ program
         })
         await generate(config)
     })
+    .version(`exaid@${version}`, "-v, --version", "output the current version")
     .parse(process.argv)

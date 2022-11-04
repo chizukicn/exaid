@@ -1,7 +1,9 @@
 import axios from "axios"
+import consola from "consola"
 import { render } from "ejs"
 import fs from "fs"
 import json5 from "json5"
+import path from "path"
 import prettier from "prettier"
 import { ExaidConfig } from "./config"
 import { defaultModuleBodyTemplate, defaultModuleFooterTemplate, defaultModuleHeaderTemplate, defaultModuleTemplate, defaultTypesTemplate } from "./templates"
@@ -90,7 +92,7 @@ export async function fetchOpenApi(url: string) {
                                         if (target) {
                                             property.type = `${refType.toString()}[]`
                                         } else {
-                                            console.error(`${name} not found`)
+                                            consola.error(`${name} not found`)
                                         }
                                     })
                                 } else if (value.items.type) {
@@ -112,7 +114,7 @@ export async function fetchOpenApi(url: string) {
                                 if (target) {
                                     property.type = refType.toString()
                                 } else {
-                                    console.error(`${name} not found`)
+                                    consola.error(`${name} not found`)
                                 }
                             })
                         }
@@ -184,7 +186,9 @@ export async function generate(option: ExaidConfig) {
     const { models, modules, result } = await fetchOpenApi(url)
 
     const typeCode = render(defaultTypesTemplate, { models }, { escape: m => m })
-    writeCode(`${dir}/types.ts`, typeCode)
+    const typeFile = path.join(dir, "types.ts")
+    writeCode(typeFile, typeCode)
+    consola.success(`${typeFile} was generated.`)
 
     fs.mkdirSync(`${dir}/modules`, { recursive: true })
 
@@ -193,7 +197,9 @@ export async function generate(option: ExaidConfig) {
         const moduleBody = render(body, module, { escape: m => m })
         const moduleFooter = render(footer, module, { escape: m => m })
         const code = render(wrapper, { ...module, moduleHeader, moduleBody, moduleFooter }, { escape: m => m })
-        writeCode(`${dir}/modules/${module.name}.ts`, code)
+        const moduleFile = path.join(dir, "modules", `${module.name}.ts`)
+        writeCode(moduleFile, code)
+        consola.success(`${moduleFile} was generated.`)
     }
 
     writeJson(`${dir}/manifest.json`, { models, modules })
@@ -212,7 +218,7 @@ export function writeCode(target: string, code: string) {
     try {
         code = prettier.format(code, { parser: "typescript", tabWidth: 4, useTabs: false })
     } catch {
-        console.error(`format error: ${target}`)
+        consola.error(`format error: ${target}`)
     }
     fs.writeFileSync(target, code)
 }

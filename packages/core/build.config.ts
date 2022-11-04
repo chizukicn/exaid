@@ -5,6 +5,7 @@ export default defineBuildConfig({
     externals: ["open-api", "maybe-types"],
     clean: true,
     declaration: true,
+    failOnWarn: false,
     rollup: {
         emitCJS: true,
         dts: {
