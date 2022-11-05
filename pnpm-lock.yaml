@@ -24,6 +24,21 @@ importers:
       typescript: 4.8.4
       unbuild: 0.9.4
 
+  packages/cli:
+    specifiers:
+      '@exaid/core': workspace:*
+      '@types/node': ^17.0.42
+      commander: ^9.3.0
+      consola: ^2.15.3
+      unconfig: ^0.3.7
+    dependencies:
+      '@exaid/core': link:../core
+      commander: 9.4.0
+      consola: 2.15.3
+      unconfig: 0.3.7
+    devDependencies:
+      '@types/node': 17.0.45
+
   packages/core:
     specifiers:
       '@types/ejs': ^3.1.1
@@ -57,11 +72,11 @@ importers:
 
   playground:
     specifiers:
+      '@exaid/cli': workspace:*
       axios: ^0.27.2
-      exaid: workspace:*
     dependencies:
+      '@exaid/cli': link:../packages/cli
       axios: 0.27.2
-      exaid: link:../packages/core
 
 packages:
 

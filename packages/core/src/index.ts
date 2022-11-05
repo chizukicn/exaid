@@ -5,11 +5,13 @@ import fs from "fs"
 import json5 from "json5"
 import path from "path"
 import prettier from "prettier"
+import { version } from "../package.json"
 import { ExaidConfig } from "./config"
 import { defaultModuleBodyTemplate, defaultModuleFooterTemplate, defaultModuleHeaderTemplate, defaultModuleTemplate, defaultTypesTemplate } from "./templates"
 import type { HttpMethod, OpenApiModel, OpenApiModelProperty, OpenApiModule, OpenApiOperation, OpenApiRequestParams, OpenApiResult, OpenApiSchema } from "./types"
 import { getExternalType, getType } from "./utils"
 
+export const EXAID_VERSION = version
 export interface FetchOpenApiOptions {
     url?: string
 }

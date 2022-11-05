@@ -13,7 +13,8 @@
         "declaration": true,
         "jsx": "preserve",
         "paths": {
-            "exaid": ["./packages/core/src/index.ts"]
+            "@exaid/core": ["./packages/core/src/index.ts"],
+            "@exaid/cli": ["./packages/cli/src/index.ts"]
         }
     },
     "include": ["./playground/**/*.ts", "./playground/**/*.tsx", "./packages/**/*.ts", "./packages/**/*.d.ts"]

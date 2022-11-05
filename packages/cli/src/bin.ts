@@ -1,14 +1,15 @@
 #!/usr/bin/env node
+import type { ExaidConfig } from "@exaid/core"
+import { EXAID_VERSION, generate } from "@exaid/core"
 import { program } from "commander"
 import { loadConfig } from "unconfig"
-import { version } from "../package.json"
-import type { ExaidConfig } from "./config"
-import { generate } from "./index"
+
+program.name("exaid").version(`exaid@${EXAID_VERSION}`, "-v, --version", "output the current version")
 
 program
     .argument("[url]")
-    .option("-t, --target <target>")
-    .option("-c, --config <config>")
+    .option("-t, --target <target>", "target directory")
+    .option("-c, --config <config>", "config file")
     .action(async (url, cmd) => {
         const { config } = await loadConfig<ExaidConfig>({
             sources: [
@@ -39,5 +40,12 @@ program
         }
         await generate(config)
     })
-    .version(`exaid@${version}`, "-v, --version", "output the current version")
-    .parse(process.argv)
+
+program
+    .command("ui")
+    .description("start the web ui")
+    .action(() => {
+        console.log("ui")
+    })
+
+program.parse()

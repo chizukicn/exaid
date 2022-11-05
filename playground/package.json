@@ -13,7 +13,6 @@
     "license": "MIT",
     "dependencies": {
         "axios": "^0.27.2",
-        "exaid": "workspace:*"
+        "@exaid/cli": "workspace:*"
     }
 }
-
