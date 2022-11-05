@@ -1,6 +1,6 @@
 {
     "name": "@exaid/core",
-    "version": "0.0.12",
+    "version": "0.1.0",
     "description": "",
     "main": "dist/index.cjs",
     "module": "dist/index.mjs",
