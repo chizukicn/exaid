@@ -4,7 +4,7 @@ import { EXAID_VERSION, generate } from "@exaid/core"
 import { program } from "commander"
 import { loadConfig } from "unconfig"
 
-program.name("exaid").version(`exaid@${EXAID_VERSION}`, "-v, --version", "output the current version")
+program.name("exaid").version(`@exaid/cli v${EXAID_VERSION}`, "-v, --version", "output the current version")
 
 program
     .argument("[url]")

@@ -23,10 +23,8 @@
     },
     "dependencies": {
         "axios": "^0.27.2",
-        "commander": "^9.3.0",
         "consola": "^2.15.3",
         "ejs": "^3.1.8",
-        "esbuild": "^0.15.6",
         "json5": "^2.2.1",
         "nunjucks": "^3.2.3",
         "prettier": "^2.6.2",
