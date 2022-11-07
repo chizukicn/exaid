@@ -11,7 +11,7 @@ import { defaultModuleBodyTemplate, defaultModuleFooterTemplate, defaultModuleHe
 import type { HttpMethod, OpenApiModel, OpenApiModelProperty, OpenApiModule, OpenApiOperation, OpenApiRequestParams, OpenApiResult, OpenApiSchema } from "./types"
 import { getExternalType, getType } from "./utils"
 
-export const EXAID_VERSION = `v${version}`
+export const EXAID_VERSION = version
 export interface FetchOpenApiOptions {
     url?: string
 }
@@ -184,7 +184,7 @@ export async function generate(option: ExaidConfig) {
 
     const { header = defaultModuleHeaderTemplate, body = defaultModuleBodyTemplate, footer = defaultModuleFooterTemplate, wrapper = defaultModuleTemplate } = moduleTemplate ?? {}
 
-    consola.info(`@exaid/core ${EXAID_VERSION} start fetching ${url}...`)
+    consola.info(`@exaid/core v${EXAID_VERSION} start fetching ${url}...`)
 
     const { models, modules, result } = await fetchOpenApi(url)
 
