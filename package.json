@@ -17,6 +17,7 @@
     "prepare": "npx simple-git-hooks",
     "lint": "eslint --cache --ext .ts,.tsx .",
     "typecheck": "tsc --noEmit --skipLibCheck",
+    "release": "pnpm -r publish --access public --registry https://registry.npmjs.org",
     "test": "vitest",
     "up:deps": "taze major"
   },
