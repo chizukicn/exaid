@@ -1,4 +1,6 @@
-export type UserConfigExport = ExaidConfig | Promise<ExaidConfig> | (() => ExaidConfig | Promise<ExaidConfig>);
+import type { MaybeAsyncFunction } from "maybe-types";
+
+export type UserConfigExport = MaybeAsyncFunction<ExaidConfig, true>;
 
 export function defineConfig(config: UserConfigExport): UserConfigExport {
   return config;

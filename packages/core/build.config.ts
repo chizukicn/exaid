@@ -6,9 +6,6 @@ export default defineBuildConfig({
   declaration: true,
   failOnWarn: false,
   rollup: {
-    emitCJS: true,
-    dts: {
-      respectExternal: true
-    }
+    emitCJS: true
   }
 });

@@ -5,6 +5,13 @@
   "author": "chizuki",
   "license": "MIT",
   "keywords": [],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    }
+  },
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -13,7 +20,8 @@
   ],
   "scripts": {
     "build": "unbuild",
-    "stub": "unbuild --stub"
+    "stub": "unbuild --stub",
+    "prepublish": "nr build"
   },
   "dependencies": {
     "axios": "^1.5.1",
@@ -21,15 +29,12 @@
     "ejs": "^3.1.9",
     "json5": "^2.2.3",
     "maybe-types": "^0.0.3",
-    "nunjucks": "^3.2.4",
     "prettier": "^3.0.3",
     "unconfig": "^0.3.11"
   },
   "devDependencies": {
-    "@curev/eslint-config": "^0.2.1",
     "@types/ejs": "^3.1.3",
     "@types/node": "^20.8.4",
-    "@types/nunjucks": "^3.2.4",
     "@types/prettier": "^3.0.0"
   }
 }

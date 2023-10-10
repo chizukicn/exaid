@@ -1,6 +1,6 @@
 export type OpenApiBaseType = "string" | "number" | "integer" | "boolean" | "array" | "object" | "file" | "binary" | "null";
 
-export type OpenApiParameterIn = "query" | "header" | "path" | "cookie" | "formData";
+export type OpenApiParameterIn = "query" | "header" | "path" | "cookie" | "formData" | "body";
 
 export type HttpMethod = "get" | "post" | "put" | "delete" | "patch" | "head" | "options" | "trace" | "connect" | "link" | "unlink";
 

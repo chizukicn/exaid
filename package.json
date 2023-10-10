@@ -9,9 +9,6 @@
     "openapi",
     "exaid"
   ],
-  "files": [
-    "dist/*"
-  ],
   "scripts": {
     "build": "rimraf packages/*/dist && pnpm -r --filter=./packages/* run build",
     "play": "pnpm -r --filter=./playground dev",
@@ -24,6 +21,8 @@
     "up:deps": "taze major"
   },
   "devDependencies": {
+    "@antfu/ni": "^0.21.8",
+    "@curev/eslint-config": "^0.2.1",
     "@exaid/cli": "workspace:*",
     "@exaid/core": "workspace:*",
     "@types/node": "^20.8.4",
