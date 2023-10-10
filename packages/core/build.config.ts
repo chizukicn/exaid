@@ -1,15 +1,14 @@
-import { defineBuildConfig } from "unbuild"
+import { defineBuildConfig } from "unbuild";
 
 export default defineBuildConfig({
-    entries: ["src/index"],
-    externals: ["open-api", "maybe-types"],
-    clean: true,
-    declaration: true,
-    failOnWarn: false,
-    rollup: {
-        emitCJS: true,
-        dts: {
-            respectExternal: true
-        }
+  entries: ["src/index"],
+  clean: true,
+  declaration: true,
+  failOnWarn: false,
+  rollup: {
+    emitCJS: true,
+    dts: {
+      respectExternal: true
     }
-})
+  }
+});

@@ -1,1 +1,1 @@
-export * from "@exaid/core"
+export * from "@exaid/core";

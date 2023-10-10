@@ -19,12 +19,12 @@
     "author": "chizuki",
     "license": "MIT",
     "devDependencies": {
-        "@types/node": "^17.0.42"
+        "@types/node": "^20.8.4"
     },
     "dependencies": {
-        "commander": "^9.3.0",
-        "consola": "^2.15.3",
-        "unconfig": "^0.3.7",
-        "@exaid/core": "workspace:*"
+        "@exaid/core": "workspace:*",
+        "commander": "^11.0.0",
+        "consola": "^3.2.3",
+        "unconfig": "^0.3.11"
     }
 }

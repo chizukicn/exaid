@@ -1,23 +1,23 @@
-export type UserConfigExport = ExaidConfig | Promise<ExaidConfig> | (() => ExaidConfig | Promise<ExaidConfig>)
+export type UserConfigExport = ExaidConfig | Promise<ExaidConfig> | (() => ExaidConfig | Promise<ExaidConfig>);
 
 export function defineConfig(config: UserConfigExport): UserConfigExport {
-    return config
+  return config;
 }
 
 export interface ExaidModuleTemplate {
-    header?: string
+  header?: string
 
-    body?: string
+  body?: string
 
-    footer?: string
+  footer?: string
 
-    wrapper?: string
+  wrapper?: string
 }
 
 export interface ExaidConfig {
-    url: string
+  url: string
 
-    dir?: string
+  dir?: string
 
-    moduleTemplate?: ExaidModuleTemplate
+  moduleTemplate?: ExaidModuleTemplate
 }
