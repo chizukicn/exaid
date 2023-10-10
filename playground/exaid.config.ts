@@ -1,5 +1,7 @@
-import { defineConfig } from "@exaid/cli";
+import { defineConfig } from "exaid";
 
-export default defineConfig({
+const config = defineConfig({
   url: "https://petstore.swagger.io/v2/swagger.json"
 });
+
+export default config;

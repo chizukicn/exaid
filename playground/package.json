@@ -12,7 +12,7 @@
     "dev": "exaid"
   },
   "dependencies": {
-    "@exaid/cli": "workspace:*",
-    "axios": "^1.5.1"
+    "axios": "^1.5.1",
+    "exaid": "workspace:*"
   }
 }

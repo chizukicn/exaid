@@ -28,7 +28,6 @@
     "consola": "^3.2.3",
     "ejs": "^3.1.9",
     "json5": "^2.2.3",
-    "maybe-types": "^0.0.3",
     "prettier": "^3.0.3",
     "unconfig": "^0.3.11"
   },

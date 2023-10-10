@@ -1,5 +1,5 @@
 {
-  "name": "@exaid/cli",
+  "name": "exaid",
   "version": "0.1.2",
   "description": "",
   "author": "chizuki",
@@ -15,9 +15,6 @@
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
-  "bin": {
-    "exaid": "dist/cli.cjs"
-  },
   "files": [
     "dist/"
   ],
@@ -27,12 +24,7 @@
     "prepublish": "nr build"
   },
   "dependencies": {
-    "@exaid/core": "workspace:*",
-    "commander": "^11.0.0",
-    "consola": "^3.2.3",
-    "unconfig": "^0.3.11"
-  },
-  "devDependencies": {
-    "@types/node": "^20.8.4"
+    "@exaid/cli": "workspace:*",
+    "@exaid/core": "workspace:*"
   }
 }

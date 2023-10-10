@@ -87,9 +87,6 @@ importers:
       json5:
         specifier: ^2.2.3
         version: 2.2.3
-      maybe-types:
-        specifier: ^0.0.3
-        version: 0.0.3
       prettier:
         specifier: ^3.0.3
         version: 3.0.3
@@ -107,14 +104,23 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
 
-  playground:
+  packages/exaid:
     dependencies:
       '@exaid/cli':
         specifier: workspace:*
-        version: link:../packages/cli
+        version: link:../cli
+      '@exaid/core':
+        specifier: workspace:*
+        version: link:../core
+
+  playground:
+    dependencies:
       axios:
         specifier: ^1.5.1
         version: 1.5.1
+      exaid:
+        specifier: workspace:*
+        version: link:../packages/exaid
 
 packages:
 
@@ -3884,10 +3890,6 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
-
-  /maybe-types@0.0.3:
-    resolution: {integrity: sha512-N2uxJ/KxCubqnxqVGi3s0EGB26J8X6xWLjEUZfLTNUBmlPRa2WcC8lWywpOsJZc6iLwG7ih8l6xFxr+jt9JnxQ==}
-    dev: false
 
   /mdast-util-from-markdown@0.8.5:
     resolution: {integrity: sha512-2hkTXtYYnr+NubD/g6KGBS/0mFmBcifAsI0yIWRiRo0PjVs6SSOSOdtzbp6kSGnShDN6G5aWZpKQ2lWRy27mWQ==}

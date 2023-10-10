@@ -15,7 +15,8 @@
     "paths": {
       "@exaid/core": ["./packages/core/src/index.ts"],
       "@exaid/cli": ["./packages/cli/src/index.ts"],
-      "@exaid/cli/bin": ["./packages/cli/src/bin.ts"]
+      "@exaid/cli/bin": ["./packages/cli/src/bin.ts"],
+      "exaid": ["./packages/exaid/src/index.ts"]
     }
   },
   "include": [
