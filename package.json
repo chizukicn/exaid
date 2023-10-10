@@ -20,9 +20,12 @@
     "prepare": "npx simple-git-hooks",
     "lint": "eslint --cache --ext .ts,.tsx .",
     "typecheck": "tsc --noEmit --skipLibCheck",
+    "test": "vitest",
     "up:deps": "taze major"
   },
   "devDependencies": {
+    "@exaid/cli": "workspace:*",
+    "@exaid/core": "workspace:*",
     "@types/node": "^20.8.4",
     "bumpp": "^9.2.0",
     "esno": "^0.17.0",
@@ -32,7 +35,8 @@
     "simple-git-hooks": "^2.9.0",
     "taze": "^0.11.3",
     "typescript": "^5.2.2",
-    "unbuild": "^2.0.0"
+    "unbuild": "^2.0.0",
+    "vitest": "^0.34.6"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"

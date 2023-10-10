@@ -18,5 +18,10 @@
       "@exaid/cli/bin": ["./packages/cli/src/bin.ts"]
     }
   },
-  "include": ["./playground/**/*.ts", "./playground/**/*.tsx", "./packages/**/*.ts", "./packages/**/*.d.ts"]
+  "include": [
+    "./playground/**/*.ts",
+    "./packages/**/*.ts",
+    "./test/**.ts",
+    "./packages/**/*.d.ts"
+  ]
 }

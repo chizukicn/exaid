@@ -61,6 +61,8 @@ export interface OpenApiDefinition {
 }
 
 export interface OpenApiResult {
+  host: string
+  basePath: string
   tags: OpenApiTag[]
   paths: Record<string, Record<HttpMethod, OpenApiPath>>
   definitions: Record<string, OpenApiDefinition>
